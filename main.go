@@ -8,7 +8,7 @@ import (
 	"github.com/sneils/adventofcode2021/days"
 )
 
-const LAST = 9
+const LAST = 10
 
 func main() {
 	for day := 1; day <= LAST; day++ {

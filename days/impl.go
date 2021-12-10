@@ -9,10 +9,15 @@ import (
 	"github.com/sneils/adventofcode2021/display"
 	"github.com/sneils/adventofcode2021/lanternfish"
 	"github.com/sneils/adventofcode2021/lavatubes"
+	"github.com/sneils/adventofcode2021/navigation"
 	"github.com/sneils/adventofcode2021/submarines"
 	"github.com/sneils/adventofcode2021/vents"
 	"github.com/sneils/adventofcode2021/vents/ventmap"
 )
+
+func (day *Day) Day10() (int, int) {
+	return navigation.Analyse(day.Inputs)
+}
 
 func (day *Day) Day9() (int, int) {
 	tubes := lavatubes.Parse(day.Inputs)
