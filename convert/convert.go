@@ -1,6 +1,8 @@
 package convert
 
-import "strconv"
+import (
+	"strconv"
+)
 
 func ToIntBase(input string, base int) int {
 	i, err := strconv.ParseInt(input, base, 64)

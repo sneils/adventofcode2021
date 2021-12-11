@@ -10,10 +10,22 @@ import (
 	"github.com/sneils/adventofcode2021/lanternfish"
 	"github.com/sneils/adventofcode2021/lavatubes"
 	"github.com/sneils/adventofcode2021/navigation"
+	"github.com/sneils/adventofcode2021/octopi"
 	"github.com/sneils/adventofcode2021/submarines"
 	"github.com/sneils/adventofcode2021/vents"
 	"github.com/sneils/adventofcode2021/vents/ventmap"
 )
+
+func (day *Day) Day11() (int, int) {
+	grid := octopi.Parse(day.Inputs)
+	for grid.Age < 100 {
+		grid.DoAge()
+	}
+	part1 := grid.Flashes
+	grid.ForwardToFirstFullFlash()
+	part2 := grid.Age
+	return part1, part2
+}
 
 func (day *Day) Day10() (int, int) {
 	return navigation.Analyse(day.Inputs)
