@@ -35,4 +35,8 @@ jobs:
           go vet .
           golint .
       - name: Run tests
-        run: go test -v -race -covermode=atomic ./...
+        run: go test -covermode=atomic ./...
+      - name: Build
+        run: GOOS=linux go build -ldflags="-s -w"
+      - name: Run
+        run: ./adventofcode2021

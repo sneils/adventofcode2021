@@ -11,10 +11,16 @@ import (
 	"github.com/sneils/adventofcode2021/lavatubes"
 	"github.com/sneils/adventofcode2021/navigation"
 	"github.com/sneils/adventofcode2021/octopi"
+	"github.com/sneils/adventofcode2021/passages"
 	"github.com/sneils/adventofcode2021/submarines"
 	"github.com/sneils/adventofcode2021/vents"
 	"github.com/sneils/adventofcode2021/vents/ventmap"
 )
+
+func (day *Day) Day12() (int, int) {
+	cave := passages.ParseCave(day.Inputs)
+	return cave.CountPassagesOut(false), cave.CountPassagesOut(true)
+}
 
 func (day *Day) Day11() (int, int) {
 	grid := octopi.Parse(day.Inputs)
