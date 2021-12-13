@@ -1,135 +1,82 @@
 package passages
 
 import (
-	"fmt"
-	"regexp"
 	"strings"
 )
 
-type Tunnel struct {
-	in, out string
-}
-
-func ParseTunnel(input string) Tunnel {
-	inAndOut := strings.Split(input, "-")
-	if inAndOut[0] == "end" || inAndOut[1] == "start" {
-		return ParseTunnelReverse(input)
+func ParseTunnel(input string) (string, string) {
+	split := strings.Split(input, "-")
+	if split[0] == "end" || split[1] == "start" {
+		return split[1], split[0]
 	}
-	return Tunnel{in: inAndOut[0], out: inAndOut[1]}
+	return split[0], split[1]
 }
 
-func ParseTunnelReverse(input string) Tunnel {
-	inAndOut := strings.Split(input, "-")
-	return Tunnel{in: inAndOut[1], out: inAndOut[0]}
+type Passage struct {
+	visited   string
+	revisited bool
 }
 
-func (tunnel Tunnel) String() string {
-	return fmt.Sprintf("%s-%s", tunnel.in, tunnel.out)
+func NewPassage(visited string, revisited bool) Passage {
+	return Passage{visited, revisited}
 }
 
-var BIG_CAVE_REGEXP = regexp.MustCompile(`[A-Z]`)
-
-func (tunnel Tunnel) leadsToBigCave() bool {
-	return BIG_CAVE_REGEXP.MatchString(tunnel.out)
-}
-
-type Passage []Tunnel
-
-func ParsePassage(input string) Passage {
-	parts := strings.Split(input, ",")
-	passage := Passage{}
-	for i := 0; i < len(parts)-1; i++ {
-		tunnel := fmt.Sprintf("%s-%s", parts[i], parts[i+1])
-		passage = append(passage, ParseTunnel(tunnel))
-	}
-	return passage
-}
-
-func (passage Passage) String() string {
-	output := ""
-	for _, tunnel := range passage {
-		output += tunnel.in + ","
-	}
-	return output + passage[len(passage)-1].out
-}
-
-func (passage Passage) isVisitAllowed(tunnel Tunnel, allowOneRevisit bool) bool {
-	if tunnel.leadsToBigCave() {
+func (passage Passage) isVisitAllowed(out string, allowOneRevisit bool) bool {
+	if strings.ToUpper(out) == out {
 		return true
 	}
-	smallCavesVisited := map[string]int{}
-	for _, visited := range passage {
-		if visited.leadsToBigCave() {
-			continue
-		}
-		smallCavesVisited[visited.out] += 1
-	}
-	if _, ok := smallCavesVisited[tunnel.out]; !ok {
+	if !strings.Contains(passage.visited, ","+out) {
 		return true
 	}
-	if allowOneRevisit {
-		for _, visits := range smallCavesVisited {
-			if visits > 1 {
-				return false
-			}
-		}
-		return true
+	if !allowOneRevisit {
+		return false
 	}
-	return false
+	return !passage.revisited
 }
 
-type CaveSystem []Tunnel
+type CaveSystem map[string][]string
 
-func ParseCave(inputs []string) CaveSystem {
+func NewCaveSystem(inputs []string) CaveSystem {
 	cave := CaveSystem{}
 	for _, input := range inputs {
-		tunnel := ParseTunnel(input)
-		cave = append(cave, tunnel)
-		if tunnel.in == "start" || tunnel.out == "end" {
+		in, out := ParseTunnel(input)
+		cave[in] = append(cave[in], out)
+		if in == "start" || out == "end" {
 			continue
 		}
-		cave = append(cave, ParseTunnelReverse(input))
+		cave[out] = append(cave[out], in)
 	}
 	return cave
 }
 
-func (cave CaveSystem) getNextTunnels(start Tunnel) []Tunnel {
-	next := []Tunnel{}
-	for _, tunnel := range cave {
-		if tunnel.in == start.out {
-			next = append(next, tunnel)
-		}
-	}
-	return next
-}
-
 func (cave CaveSystem) findPassages(passage Passage, allowSingleRevisit bool) []Passage {
-	head := passage[len(passage)-1]
-	body := passage[:len(passage)-1]
-	if head.out == "end" {
-		return []Passage{passage}
-	}
-	if !body.isVisitAllowed(head, allowSingleRevisit) {
-		return []Passage{}
-	}
 	passages := []Passage{}
-	next := cave.getNextTunnels(head)
-	for _, tunnel := range next {
-		nextPassage := make(Passage, len(passage))
-		copy(nextPassage, passage)
-		nextPassage = append(nextPassage, tunnel)
-		passages = append(passages, cave.findPassages(nextPassage, allowSingleRevisit)...)
+	holes := strings.Split(passage.visited, ",")
+	for _, next := range cave[holes[len(holes)-1]] {
+		out := "," + next
+		if next == "end" {
+			end := passage
+			end.visited += out
+			passages = append(passages, end)
+			continue
+		}
+		if !passage.isVisitAllowed(next, allowSingleRevisit) {
+			continue
+		}
+		new := passage
+		new.revisited = passage.revisited || (strings.ToLower(out) == out && strings.Contains(passage.visited, out))
+		new.visited += out
+		passages = append(passages, cave.findPassages(new, allowSingleRevisit)...)
 	}
 	return passages
 }
 
 func (cave CaveSystem) CountPassagesOut(allowSingleRevisit bool) int {
 	count := 0
-	for _, tunnel := range cave {
-		if tunnel.in != "start" {
-			continue
-		}
-		count += len(cave.findPassages(Passage{tunnel}, allowSingleRevisit))
+	for _, out := range cave["start"] {
+		passage := NewPassage("start,"+out, false)
+		count += len(cave.findPassages(passage, allowSingleRevisit))
+
 	}
 	return count
 }

@@ -34,7 +34,7 @@ func (day *Day) Day13() (int, int) {
 }
 
 func (day *Day) Day12() (int, int) {
-	cave := passages.ParseCave(day.Inputs)
+	cave := passages.NewCaveSystem(day.Inputs)
 	return cave.CountPassagesOut(false), cave.CountPassagesOut(true)
 }
 

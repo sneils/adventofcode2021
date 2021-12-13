@@ -1,7 +1,6 @@
 package passages
 
 import (
-	"fmt"
 	"sort"
 	"testing"
 )
@@ -12,34 +11,7 @@ var (
 	INPUT_COMPLEX = []string{"fs-end", "he-DX", "fs-he", "start-DX", "pj-DX", "end-zg", "zg-sl", "zg-pj", "pj-he", "RW-he", "fs-DX", "pj-RW", "zg-RW", "start-pj", "he-WI", "zg-he", "pj-fs", "start-RW"}
 )
 
-func TestParseTunnel(t *testing.T) {
-	tests := map[string]string{
-		"start-end": "start-end",
-		"start-a":   "start-a",
-		"a-start":   "start-a",
-		"a-end":     "a-end",
-		"end-a":     "a-end",
-		"end-start": "start-end",
-		"a-b":       "a-b",
-		"b-a":       "b-a",
-	}
-	for input, expected := range tests {
-		tunnel := ParseTunnel(input)
-		if expected != tunnel.String() {
-			t.Errorf("Expected to find %s, found %s.", expected, tunnel)
-		}
-	}
-}
-
-func TestParsePassage(t *testing.T) {
-	passage := ParsePassage("start,b,end")
-	expected := Passage{ParseTunnel("start-b"), ParseTunnel("b-end")}
-	if passage.String() != expected.String() {
-		t.Errorf("Expected passage to be (%s), but found (%s).", passage, expected)
-	}
-}
-
-func TestParseCave(t *testing.T) {
+func TestNewCaveSystem(t *testing.T) {
 	tests := map[string]int{
 		"start-end": 1,
 		"start-a":   1,
@@ -51,81 +23,42 @@ func TestParseCave(t *testing.T) {
 		"b-a":       2,
 	}
 	for input, expected := range tests {
-		cave := ParseCave([]string{input})
+		cave := NewCaveSystem([]string{input})
 		if expected != len(cave) {
 			t.Errorf("Expected to find %d tunnels, found %d.", expected, len(cave))
 		}
 	}
 }
 
-func TestIsVisitAlowedSimpleYes(t *testing.T) {
-	passage := ParsePassage("start,a")
-	tunnel := ParseTunnel("a-b")
-	expected := true
-	actual := passage.isVisitAllowed(tunnel, false)
-	if expected != actual {
-		t.Errorf("Expected tunnel %s in passage %s: %v, found: %v.", tunnel, passage, expected, actual)
+func TestIsVisitAllowed(t *testing.T) {
+	tests := map[Passage]bool{
+		NewPassage("start,b", false):        true,
+		NewPassage("start,a,A", false):      false,
+		NewPassage("start,a,A,b,B", false):  false,
+		NewPassage("start,a,A,a,b,B", true): false,
 	}
-}
-
-func TestIsVisitAlowedSimpleNo(t *testing.T) {
-	passage := ParsePassage("start,a,A")
-	tunnel := ParseTunnel("A-a")
-	expected := false
-	actual := passage.isVisitAllowed(tunnel, false)
-	if expected != actual {
-		t.Errorf("Expected tunnel %s in passage %s: %v, found: %v.", tunnel, passage, expected, actual)
-	}
-}
-
-func TestIsVisitAlowedComplexYes(t *testing.T) {
-	passage := ParsePassage("start,a,A,b,B")
-	tunnel := ParseTunnel("B-a")
-	expected := true
-	actual := passage.isVisitAllowed(tunnel, true)
-	if expected != actual {
-		t.Errorf("Expected tunnel %s in passage %s: %v, found: %v.", tunnel, passage, expected, actual)
-	}
-}
-
-func TestIsVisitAlowedComplexNo(t *testing.T) {
-	passage := ParsePassage("start,a,A,a,b,B")
-	tunnel := ParseTunnel("B-a")
-	expected := false
-	actual := passage.isVisitAllowed(tunnel, true)
-	if expected != actual {
-		t.Errorf("Expected tunnel %s in passage %s: %v, found: %v.", tunnel, passage, expected, actual)
-	}
-}
-
-func TestLeadsToBigCave(t *testing.T) {
-	inputs := map[string]bool{
-		"start-A": true,
-		"start-b": false,
-		"A-c":     false,
-		"A-b":     false,
-		"b-d":     false,
-		"A-end":   false,
-		"b-end":   false,
-		"BB-end":  false,
-		"a-AA":    true,
-		"end-AA":  false,
-	}
-	for input, expected := range inputs {
-		actual := ParseTunnel(input).leadsToBigCave()
+	next := "a"
+	for passage, expected := range tests {
+		actual := passage.isVisitAllowed(next, false)
 		if expected != actual {
-			t.Errorf("Expected %v for %s, but found %v", expected, input, actual)
+			t.Errorf("Expected %s next in passage %v: %v, found: %v.", next, passage, expected, actual)
 		}
 	}
 }
 
-func TestGetNextTunnels(t *testing.T) {
-	cave := ParseCave(INPUT_SIMPLE)
-	tunnel := ParseTunnel("start-A")
-	expected := []Tunnel{ParseTunnel("A-c"), ParseTunnel("A-b"), ParseTunnel("A-end")}
-	actual := cave.getNextTunnels(tunnel)
-	if fmt.Sprintf("%v", expected) != fmt.Sprintf("%v", actual) {
-		t.Errorf("Expected to find %v, but found %v.", expected, actual)
+func TestIsVisitAllowedRevisit(t *testing.T) {
+	tests := map[Passage]bool{
+		NewPassage("start,b", false):        true,
+		NewPassage("start,a,A", false):      true,
+		NewPassage("start,a,A,b,B", false):  true,
+		NewPassage("start,a,A,a,b,B", true): false,
+	}
+	next := "a"
+	for passage, expected := range tests {
+		actual := passage.isVisitAllowed(next, true)
+		if expected != actual {
+			t.Errorf("Expected %s next in passage %v: %v, found: %v.", next, passage, expected, actual)
+		}
 	}
 }
 
@@ -140,8 +73,8 @@ func TestFindPassages(t *testing.T) {
 		"start,A,end",
 	}
 	actuals := []string{}
-	for _, passage := range ParseCave(INPUT_SIMPLE).findPassages(Passage{ParseTunnel("start-A")}, false) {
-		actuals = append(actuals, passage.String())
+	for _, passage := range NewCaveSystem(INPUT_SIMPLE).findPassages(NewPassage("start,A", false), false) {
+		actuals = append(actuals, passage.visited)
 	}
 	sort.Strings(actuals)
 	if len(expected) != len(actuals) {
@@ -183,8 +116,8 @@ func TestFindMorePassages(t *testing.T) {
 		"start,A,end",
 	}
 	actuals := []string{}
-	for _, passage := range ParseCave(INPUT_SIMPLE).findPassages(Passage{ParseTunnel("start-A")}, true) {
-		actuals = append(actuals, passage.String())
+	for _, passage := range NewCaveSystem(INPUT_SIMPLE).findPassages(NewPassage("start,A", false), true) {
+		actuals = append(actuals, passage.visited)
 	}
 	sort.Strings(actuals)
 	if len(expected) != len(actuals) {
@@ -200,7 +133,7 @@ func TestFindMorePassages(t *testing.T) {
 
 func TestCountPassagesOutSimple(t *testing.T) {
 	expected := 10
-	actual := ParseCave(INPUT_SIMPLE).CountPassagesOut(false)
+	actual := NewCaveSystem(INPUT_SIMPLE).CountPassagesOut(false)
 	if expected != actual {
 		t.Errorf("Expected to find %d passages out, found %d.", expected, actual)
 	}
@@ -208,7 +141,7 @@ func TestCountPassagesOutSimple(t *testing.T) {
 
 func TestCountMorePassagesOutSimple(t *testing.T) {
 	expected := 36
-	actual := ParseCave(INPUT_SIMPLE).CountPassagesOut(true)
+	actual := NewCaveSystem(INPUT_SIMPLE).CountPassagesOut(true)
 	if expected != actual {
 		t.Errorf("Expected to find %d passages out, found %d.", expected, actual)
 	}
@@ -216,7 +149,7 @@ func TestCountMorePassagesOutSimple(t *testing.T) {
 
 func TestCountPassagesOutMedium(t *testing.T) {
 	expected := 19
-	actual := ParseCave(INPUT_MEDIUM).CountPassagesOut(false)
+	actual := NewCaveSystem(INPUT_MEDIUM).CountPassagesOut(false)
 	if expected != actual {
 		t.Errorf("Expected to find %d passages out, found %d.", expected, actual)
 	}
@@ -224,7 +157,7 @@ func TestCountPassagesOutMedium(t *testing.T) {
 
 func TestCountMorePassagesOutMedium(t *testing.T) {
 	expected := 103
-	actual := ParseCave(INPUT_MEDIUM).CountPassagesOut(true)
+	actual := NewCaveSystem(INPUT_MEDIUM).CountPassagesOut(true)
 	if expected != actual {
 		t.Errorf("Expected to find %d passages out, found %d.", expected, actual)
 	}
@@ -232,7 +165,7 @@ func TestCountMorePassagesOutMedium(t *testing.T) {
 
 func TestCountPassagesOutComplex(t *testing.T) {
 	expected := 226
-	actual := ParseCave(INPUT_COMPLEX).CountPassagesOut(false)
+	actual := NewCaveSystem(INPUT_COMPLEX).CountPassagesOut(false)
 	if expected != actual {
 		t.Errorf("Expected to find %d passages out, found %d.", expected, actual)
 	}
@@ -240,7 +173,7 @@ func TestCountPassagesOutComplex(t *testing.T) {
 
 func TestCountMorePassagesOutComplex(t *testing.T) {
 	expected := 3509
-	actual := ParseCave(INPUT_COMPLEX).CountPassagesOut(true)
+	actual := NewCaveSystem(INPUT_COMPLEX).CountPassagesOut(true)
 	if expected != actual {
 		t.Errorf("Expected to find %d passages out, found %d.", expected, actual)
 	}
