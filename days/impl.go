@@ -11,11 +11,27 @@ import (
 	"github.com/sneils/adventofcode2021/lavatubes"
 	"github.com/sneils/adventofcode2021/navigation"
 	"github.com/sneils/adventofcode2021/octopi"
+	"github.com/sneils/adventofcode2021/origami"
 	"github.com/sneils/adventofcode2021/passages"
 	"github.com/sneils/adventofcode2021/submarines"
 	"github.com/sneils/adventofcode2021/vents"
 	"github.com/sneils/adventofcode2021/vents/ventmap"
 )
+
+func (day *Day) Day13() (int, int) {
+	groups := day.Groups()
+	paper := origami.Parse(groups[0])
+	for _, fold := range groups[1][:1] {
+		paper.Fold(fold)
+	}
+	part1 := paper.CountDots()
+	for _, fold := range groups[1][1:] {
+		paper.Fold(fold)
+	}
+	part2 := paper.CountDots()
+	paper.Print()
+	return part1, part2
+}
 
 func (day *Day) Day12() (int, int) {
 	cave := passages.ParseCave(day.Inputs)
