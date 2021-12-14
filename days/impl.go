@@ -13,10 +13,26 @@ import (
 	"github.com/sneils/adventofcode2021/octopi"
 	"github.com/sneils/adventofcode2021/origami"
 	"github.com/sneils/adventofcode2021/passages"
+	"github.com/sneils/adventofcode2021/polymers"
 	"github.com/sneils/adventofcode2021/submarines"
 	"github.com/sneils/adventofcode2021/vents"
 	"github.com/sneils/adventofcode2021/vents/ventmap"
 )
+
+func (day *Day) Day14() (int, int) {
+	groups := day.Groups()
+	tmpl := polymers.NewTemplate(groups[0][0])
+	rules := polymers.NewRuleSet(groups[1])
+	part1 := 0
+	for i := 1; i <= 40; i++ {
+		tmpl.ApplyRules(rules)
+		if i == 10 {
+			part1 = tmpl.GetScore()
+		}
+	}
+	part2 := tmpl.GetScore()
+	return part1, part2
+}
 
 func (day *Day) Day13() (int, int) {
 	groups := day.Groups()
