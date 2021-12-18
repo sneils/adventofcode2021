@@ -1,4 +1,4 @@
-package crabsubmarines
+package crabmarines
 
 import (
 	"strings"
@@ -11,7 +11,7 @@ type CrabSubmarines struct {
 	positions []int
 }
 
-func ParseString(inputs string) *CrabSubmarines {
+func NewCrabmarines(inputs string) *CrabSubmarines {
 	crabs := &CrabSubmarines{}
 	for _, input := range strings.Split(inputs, ",") {
 		i := convert.ToInt(input)
