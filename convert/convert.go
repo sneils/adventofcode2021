@@ -36,3 +36,7 @@ func FromBinary(input string) int {
 func FromHex(input string) int {
 	return ToIntBase(input, 16)
 }
+
+func ToBinary(i int) string {
+	return strconv.FormatInt(int64(i), 2)
+}

@@ -1,5 +1,7 @@
 package days
 
+import "github.com/sneils/adventofcode2021/packetdecoder"
+
 func (day *Day) Day20() (int, int) {
 	return 0, 0
 }
@@ -17,5 +19,6 @@ func (day *Day) Day17() (int, int) {
 }
 
 func (day *Day) Day16() (int, int) {
-	return 0, 0
+	packet := packetdecoder.Decode(day.Inputs[0])
+	return packet.GetVersionSum(), packet.GetValue()
 }
