@@ -1,6 +1,9 @@
 package days
 
-import "github.com/sneils/adventofcode2021/packetdecoder"
+import (
+	"github.com/sneils/adventofcode2021/packetdecoder"
+	"github.com/sneils/adventofcode2021/probelauncher"
+)
 
 func (day *Day) Day20() (int, int) {
 	return 0, 0
@@ -15,7 +18,10 @@ func (day *Day) Day18() (int, int) {
 }
 
 func (day *Day) Day17() (int, int) {
-	return 0, 0
+	target := probelauncher.NewTarget(day.Inputs[0])
+	hits := target.GetHits()
+	maxY := hits.GetMaxY()
+	return maxY, len(hits)
 }
 
 func (day *Day) Day16() (int, int) {
