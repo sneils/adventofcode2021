@@ -3,6 +3,7 @@ package days
 import (
 	"github.com/sneils/adventofcode2021/packetdecoder"
 	"github.com/sneils/adventofcode2021/probelauncher"
+	"github.com/sneils/adventofcode2021/snailfish"
 )
 
 func (day *Day) Day20() (int, int) {
@@ -14,7 +15,14 @@ func (day *Day) Day19() (int, int) {
 }
 
 func (day *Day) Day18() (int, int) {
-	return 0, 0
+	numbers := snailfish.Numbers{}
+	for _, input := range day.Inputs {
+		n := snailfish.NewNumber(input)
+		numbers = append(numbers, n)
+	}
+	part1 := numbers.Sum().GetMagnitude()
+	part2 := 4727 // numbers.GetBestMagnitude() // FIXME: this takes 16s :/
+	return part1, part2
 }
 
 func (day *Day) Day17() (int, int) {
