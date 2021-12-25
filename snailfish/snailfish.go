@@ -27,9 +27,7 @@ func NewNumber(input string) *Number {
 }
 
 func (n Number) String() string {
-	a := format(n.a, n.an)
-	b := format(n.b, n.bn)
-	return fmt.Sprintf("[%s,%s]", a, b)
+	return n.input
 }
 
 func (n *Number) Reduce() *Number {

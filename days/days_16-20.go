@@ -21,7 +21,7 @@ func (day *Day) Day18() (int, int) {
 		numbers = append(numbers, n)
 	}
 	part1 := numbers.Sum().GetMagnitude()
-	part2 := 4727 // numbers.GetBestMagnitude() // FIXME: this takes 16s :/
+	part2 := 4727 // numbers.GetBestMagnitude() // FIXME: this takes 8s :/
 	return part1, part2
 }
 

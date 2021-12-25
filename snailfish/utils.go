@@ -5,13 +5,6 @@ import (
 	"strings"
 )
 
-func format(i int, n *Number) string {
-	if i >= 0 {
-		return fmt.Sprintf("%d", i)
-	}
-	return n.String()
-}
-
 func next(input string) string {
 	stack := 0
 	str := ""
